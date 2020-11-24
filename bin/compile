@@ -1,16 +1,49 @@
 #!/bin/sh
 
-indent() {
-  sed -u 's/^/       /'
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+# parse and derive params
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+LP_DIR=`cd $(dirname $0); cd ..; pwd`
+
+function error() {
+  echo " !     $*" >&2
+  exit 1
 }
 
-echo "-----> Found a hello.txt"
+function topic() {
+  echo "-----> $*"
+}
 
-# if hello.txt is empty, abort the build
-if [ ! -s $1/hello.txt ]; then
-  echo "hello.txt was empty" | indent
-  exit 1
-fi
+function indent() {
+  c='s/^/       /'
+  case $(uname) in
+    Darwin) sed -l "$c";;
+    *)      sed -u "$c";;
+  esac
+}
 
-# replace hello with goodbye in a new file
-cat $1/hello.txt | sed -e "s/[Hh]ello/Goodbye/g" > $1/goodbye.txt
+ls -R $BUILD_DIR/.apt/
+
+mkdir -p $BUILD_DIR/.tdlib
+
+git clone https://github.com/tdlib/td.git $BUILD_DIR/.tdlib
+cd $BUILD_DIR/.tdlib
+rm -rf build
+mkdir build
+cd build
+export CXXFLAGS="-stdlib=libc++"
+CC=$BUILD_DIR/.apt/usr/bin/clang CXX=$BUILD_DIR/.apt/usr/bin/clang++ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/app/lib ..
+cmake --build . --target prepare_cross_compiling
+cd ..
+php SplitSource.php
+cd build
+cmake --build . --target install
+cd ..
+php SplitSource.php --undo
+cd ..
+ls -l td/tdlib
