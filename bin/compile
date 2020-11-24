@@ -3,6 +3,12 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
 
+indent() {
+  sed -u 's/^/       /'
+}
+
+echo "-----> Building tdlib"
+
 # parse and derive params
 BUILD_DIR=$1
 CACHE_DIR=$2
@@ -10,22 +16,6 @@ ENV_DIR=$3
 
 LP_DIR=`cd $(dirname $0); cd ..; pwd`
 
-function error() {
-  echo " !     $*" >&2
-  exit 1
-}
-
-function topic() {
-  echo "-----> $*"
-}
-
-function indent() {
-  c='s/^/       /'
-  case $(uname) in
-    Darwin) sed -l "$c";;
-    *)      sed -u "$c";;
-  esac
-}
 
 ls -R $BUILD_DIR/.apt/
 
