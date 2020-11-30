@@ -1,6 +1,8 @@
 Heroku buildpack: tdlib
 =======================
 
+## !!! This buildpack does not work !!!
+
 ### Usage
 
 Add Heroku Apt buildpack
